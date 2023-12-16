@@ -1,190 +1,294 @@
-const itemForm = document.querySelector(`#item-form`);
-const itemInput = document.querySelector(`#item-input`);
-const list = document.querySelector(`#item-list`);
-const btnClearAll = document.querySelector(`#clear`);
-const filterInput = document.querySelector(`#filter`);
-const btnAddUpdate = itemForm.querySelector(`button`);
+const todoData = document.querySelector(`#todo-data`);
+const todoSubmit = document.querySelector(`.add-todo`);
+const textArea = document.querySelector(`#todo-text-area`);
+const dateInput = document.querySelector(`#todo-data input[type="date"]`);
+const priorityContainer = document.querySelector(`#radios`);
+const statusContainer = document.querySelector(`#status`);
+const list = document.querySelector(`#todo-list`);
+const tasks = document.querySelector(`#todo-list #items`);
+const search = document.querySelector(`#search`);
+let taskToEdit = null;
 
-let editHelper = {
-  inEditMode: false,
-  currentEditItem: null,
-  indexOfCurrEditItem: -1,
-};
+const startedList = document.querySelector(`#started #items`);
 
-document.addEventListener(`DOMContentLoaded`, (e) => {
-  const savedItems = getSavedItems();
+const completedList = document.querySelector(`#completed #items`);
 
-  savedItems.forEach((item) => addItemToDOM(item));
+console.log(tasks);
 
-  checkUI();
-});
+function init() {
+  const savedTasks = getSavedTasks();
+  savedTasks.forEach((item) => {
+    addToDom(item.task, item.date, item.prio, item.stat);
+  });
 
-const onAddUpdateClicked = (e) => {
-  e.preventDefault();
-  const value = itemInput.value;
-  itemInput.value = ``;
-  if (value === ``) {
-    alert(`please enter any item`);
-    return;
+  let tasks = document.querySelector(`#todo-list #items`);
+  if (tasks.children.length === 0) {
+    const img = document.querySelector(`img`);
+    img.src = `images/Empty.png`;
   }
 
-  if (editHelper.inEditMode) {
-    allListItems = list.querySelectorAll(`li`);
-    editHelper.indexOfCurrEditItem = Array.from(allListItems).indexOf(
-      editHelper.currentEditItem
-    );
-    removeItem(editHelper.currentEditItem);
+  tasks = document.querySelector(`#started #items`);
 
-    setFormButtonStyleFor(`add`);
+  if (tasks.children.length === 0) {
+    const img = document.querySelector(`img`);
+    img.src = `images/Empty.png`;
   }
 
-  if (itemExists(value)) {
-    alert("That item already exists");
-    return;
-  }
+  tasks = document.querySelector(`#started #items`);
 
-  addItemToDOM(value, editHelper.indexOfCurrEditItem);
-  addItemToLocalStorage(value, editHelper.indexOfCurrEditItem);
-
-  checkUI();
-  resetEditHelper();
-};
-
-function itemExists(item) {
-  return getSavedItems().includes(item);
-}
-function resetEditHelper() {
-  editHelper.inEditMode = false;
-  editHelper.currentEditItem = null;
-  editHelper.indexOfCurrEditItem = -1;
-}
-
-function addItemToDOM(item, index = -1) {
-  const li = document.createElement("li");
-
-  const text = document.createTextNode(item);
-  li.append(text);
-
-  const btn = document.createElement(`button`);
-  btn.className = `remove-item btn-link text-red`;
-  const i = document.createElement(`i`);
-  i.className = `fa-solid fa-xmark`;
-  btn.insertAdjacentElement(`afterbegin`, i);
-  li.insertAdjacentElement(`beforeend`, btn);
-  if (index !== -1 && index !== list.children.length) {
-    list.children[index].insertAdjacentElement(`beforebegin`, li);
-  } else {
-    list.insertAdjacentElement(`beforeend`, li);
+  if (tasks.children.length === 0) {
+    const img = document.querySelector(`img`);
+    img.src = `images/Empty.png`;
   }
 }
 
-function addItemToLocalStorage(item, index = -1) {
-  const savedItems = getSavedItems();
-  if (index !== -1 && index !== list.children.length) {
-    savedItems.splice(index, 0, item);
-  } else {
-    savedItems.push(item);
-  }
-  localStorage.setItem("items", JSON.stringify(savedItems));
-}
-
-function getSavedItems() {
-  let savedItems = JSON.parse(localStorage.getItem(`items`));
-
-  if (savedItems === null) {
-    savedItems = [];
-  }
-
-  return savedItems;
-}
-
-function onItemClick(e) {
-  if (e.target.parentElement.classList.contains(`remove-item`)) {
-    if (confirm(`you sure wanna delete that??`)) {
-      removeItem(e.target.parentElement.parentElement);
-    }
-  } else {
-    const clickedItem = e.target;
-    if (clickedItem.tagName === `LI`) {
-      editHelper.inEditMode = true;
-      // console.log(editHelper.inEditMode);
-
-      if (editHelper.currentEditItem !== null) {
-        editHelper.currentEditItem.style.color = `black`;
-      }
-      editHelper.currentEditItem = clickedItem;
-      clickedItem.style.color = `#ccc`;
-
-      itemInput.value = clickedItem.textContent;
-      setFormButtonStyleFor(`update`);
-    }
-  }
-}
-
-function setFormButtonStyleFor(task) {
-  btnAddUpdate.style.backgroundColor = task === `update` ? `green` : `black`;
-  btnAddUpdate.innerHTML =
-    task === `update`
-      ? `<i class="fa-solid fa-pen"></i> Update Item`
-      : `<i class="fa-solid fa-plus"></i> Add Item`;
-}
-
-function removeItem(item) {
-  item.remove();
-  checkUI();
-
-  removeItemFromStorage(item.textContent);
-}
-
-function removeItemFromStorage(item) {
-  let savedItems = getSavedItems();
-  savedItems = savedItems.filter((i) => i !== item);
-  localStorage.setItem("items", JSON.stringify(savedItems));
-}
-
-const onClearBtnClicked = (e) => {
-  if (!list.firstElementChild) {
-    alert(`nothing to clear`);
-    return;
-  }
-
-  if (confirm(`you really wanna clear all??`)) {
-    while (list.firstElementChild) {
-      list.firstElementChild.remove();
-    }
-
-    localStorage.removeItem(`items`);
-
-    checkUI();
-  }
-};
-
-function filterItems(e) {
-  const text = e.target.value.toLowerCase();
-  const items = list.querySelectorAll(`li`);
-
-  items.forEach((item) => {
-    const itemText = item.firstChild.textContent.toLocaleLowerCase();
-    if (itemText.indexOf(text) === -1) {
-      item.style.display = `none`;
-    } else {
-      item.style.display = `flex`;
+function addTask() {
+  let prio = false;
+  priorityContainer.querySelectorAll(`input`).forEach((inp) => {
+    if (inp.checked) {
+      prio = inp.value;
     }
   });
-}
 
-function checkUI() {
-  const itemsCount = list.children.length;
-  if (itemsCount === 0) {
-    btnClearAll.style.display = `none`;
-    filterInput.style.display = `none`;
-  } else {
-    btnClearAll.style.display = `inline`;
-    filterInput.style.display = `inline`;
+  let status = false;
+  statusContainer.querySelectorAll(`input`).forEach((inp) => {
+    if (inp.checked) {
+      status = inp.value;
+    }
+  });
+
+  if (
+    prio === false ||
+    status === false ||
+    textArea.value === `` ||
+    dateInput.value === ``
+  ) {
+    alert(`please provide all values`);
+    return;
   }
+
+  addToDom(textArea.value, dateInput.value, prio, status);
+  addToStorage(textArea.value, dateInput.value, prio, status);
+
+  textArea.value = ``;
+  dateInput.value = ``;
 }
 
-itemForm.addEventListener(`submit`, onAddUpdateClicked);
-list.addEventListener(`click`, onItemClick);
-btnClearAll.addEventListener(`click`, onClearBtnClicked);
-filterInput.addEventListener(`input`, filterItems);
+function onEdit(e) {
+  taskToEdit = e.target.parentElement.parentElement.parentElement.parentElement;
+  textArea.value = taskToEdit.lastChild.textContent;
+  const status = taskToEdit.querySelector(`.status`).textContent.split(`:`)[1];
+  console.log(status);
+  console.log(
+    `date is `,
+    taskToEdit.querySelector(`.deadline`).textContent.split(`:`)[1].trim()
+  );
+  dateInput.value = taskToEdit
+    .querySelector(`.deadline`)
+    .textContent.split(`:`)[1]
+    .trim();
+  const prio = taskToEdit.querySelector(`.priority`).textContent.split(`:`)[1];
+  console.log(prio);
+  todoData.querySelector(`input[value=${status}]`).checked = true;
+  todoData.querySelector(`input[value=${prio}]`).checked = true;
+  todoSubmit.click();
+
+  todoSubmit.innerHTML = `<i class="fa-solid fa-pencil"></i> update`;
+  todoData.classList.add(`update`);
+}
+
+function onDelete(e) {
+  const itemToDelete =
+    e.target.parentElement.parentElement.parentElement.parentElement;
+  const savedTasks = getSavedTasks();
+  savedTasks.forEach((item) => {
+    if (item.task === itemToDelete.lastChild.textContent) {
+      savedTasks.splice(savedTasks.indexOf(item), 1);
+    }
+  });
+  itemToDelete.remove();
+
+  console.log(savedTasks);
+}
+
+function updateTask() {
+  taskToEdit.lastChild.textContent = textArea.value;
+  taskToEdit.querySelector(
+    `.deadline`
+  ).textContent = `Deadline: ${dateInput.value}`;
+  let prio = false;
+  priorityContainer.querySelectorAll(`input`).forEach((inp) => {
+    if (inp.checked) {
+      prio = inp.value;
+    }
+  });
+
+  let status = false;
+  statusContainer.querySelectorAll(`input`).forEach((inp) => {
+    if (inp.checked) {
+      status = inp.value;
+    }
+  });
+  taskToEdit.querySelector(`.priority`).textContent = `Priority: ${prio}`;
+  taskToEdit.querySelector(`.status`).textContent = `Status: ${status}`;
+  taskToEdit.remove();
+  let tasks = null;
+  if (stat === `todo`) {
+    tasks = document.querySelector(`#todo-list #items`);
+  } else if (stat === `started`) {
+    tasks = document.querySelector(`#started #items`);
+  } else if (stat === `completed`) {
+    tasks = document.querySelector(`#completed #items`);
+  }
+
+  tasks.append(taskToEdit);
+}
+function addToDom(task, date, prio, stat) {
+  console.log();
+
+  const div = document.createElement(`div`);
+  div.classList.add(`task`);
+  // div.innerHTML= `
+  // <div class= "first">
+  //   <span class="deadline">Deadline: ${date}</span>
+  //   <span class= "priority">Priority: ${prio}</span>
+  //   <span class="buttons">
+  //     <button id= "delete">
+  //     <i class="fa-solid fa-trash"></i>
+  //     </button>
+
+  //     <button id= "edit">
+  //     <i class="fa-solid fa-pencil"></i>
+  //     </button>
+
+  //     </span>
+
+  // </div>
+  // <div>
+  //   ${task}
+  // </div>
+  // `;
+
+  const first = document.createElement(`div`);
+  first.classList.add(`first`);
+
+  const deadline = document.createElement(`span`);
+  deadline.classList.add(`deadline`);
+  deadline.appendChild(document.createTextNode(`Deadline: ${date}`));
+
+  const priority = document.createElement(`span`);
+  priority.classList.add(`priority`);
+  priority.appendChild(document.createTextNode(`Priority: ${prio}`));
+
+  const status = document.createElement(`span`);
+  status.classList.add(`status`);
+  status.appendChild(document.createTextNode(`Status: ${stat}`));
+
+  const buttons = document.createElement(`span`);
+  buttons.classList.add(`buttons`);
+
+  const edit = document.createElement(`button`);
+  edit.innerHTML = ` <i class="fa-solid fa-pencil"></i>`;
+  edit.addEventListener(`click`, onEdit);
+
+  const deleteBtn = document.createElement(`button`);
+  deleteBtn.innerHTML = ` <i class="fa-solid fa-trash"></i>`;
+  deleteBtn.addEventListener(`click`, onDelete);
+
+  buttons.append(edit, deleteBtn);
+
+  first.append(deadline, priority, status, buttons);
+  const taskDiv = document.createElement(`div`);
+  taskDiv.classList.add(`taskDiv`);
+  taskDiv.appendChild(document.createTextNode(task));
+  div.append(first, taskDiv);
+  let tasks = null;
+  if (stat === `todo`) {
+    tasks = document.querySelector(`#todo-list #items`);
+  } else if (stat === `started`) {
+    tasks = document.querySelector(`#started #items`);
+  } else if (stat === `completed`) {
+    tasks = document.querySelector(`#completed #items`);
+  }
+  tasks.append(div);
+}
+
+function addToStorage(task, date, prio, stat) {
+  const item = {
+    task,
+    date,
+    prio,
+    stat,
+  };
+
+  let savedTasks = getSavedTasks();
+  savedTasks.push(item);
+  localStorage.setItem(`tasks`, JSON.stringify(savedTasks));
+}
+
+function getSavedTasks() {
+  let list = localStorage.getItem(`tasks`);
+  if (list === null) {
+    list = [];
+  } else {
+    list = JSON.parse(list);
+  }
+  return list;
+}
+todoSubmit.addEventListener(`click`, (e) => {
+  e.preventDefault();
+  if (todoData.classList.contains(`show`)) {
+    todoData.classList.remove(`show`);
+    todoSubmit.innerHTML = `Create ToDo`;
+    if (!todoSubmit.classList.contains(`update`)) {
+      addTask();
+    } else {
+      updateTask();
+    }
+  } else {
+    todoData.classList.add(`show`);
+    todoSubmit.innerHTML = `<i class="fa-solid fa-plus"></i>
+      Add`;
+  }
+});
+search.addEventListener(`input`, (e) => {
+  Array.from(startedList.children).forEach((item) => {
+    itemText = item
+      .querySelector(`.taskDiv`)
+      .textContent.toLocaleLowerCase()
+      .trim();
+    const searchText = search.value.toLocaleLowerCase().trim();
+    if (itemText.indexOf(searchText) === -1) {
+      item.style.display = `none`;
+    } else {
+      item.style.display = `initial`;
+    }
+  });
+
+  Array.from(tasks.children).forEach((item) => {
+    itemText = item
+      .querySelector(`.taskDiv`)
+      .textContent.toLocaleLowerCase()
+      .trim();
+    const searchText = search.value.toLocaleLowerCase().trim();
+    if (itemText.indexOf(searchText) === -1) {
+      item.style.display = `none`;
+    } else {
+      item.style.display = `initial`;
+    }
+  });
+
+  Array.from(completedList.children).forEach((item) => {
+    itemText = item
+      .querySelector(`.taskDiv`)
+      .textContent.toLocaleLowerCase()
+      .trim();
+    const searchText = search.value.toLocaleLowerCase().trim();
+    if (itemText.indexOf(searchText) === -1) {
+      item.style.display = `none`;
+    } else {
+      item.style.display = `initial`;
+    }
+  });
+});
+window.addEventListener(`DOMContentLoaded`, init);

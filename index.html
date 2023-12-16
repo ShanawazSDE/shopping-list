@@ -12,13 +12,13 @@
       referrerpolicy="no-referrer"
     />
     <link rel="stylesheet" href="style.css" />
-    <title>Shopping List</title>
+    <title>ToDo List</title>
   </head>
-  <body>
-    <div class="container">
+   <body>
+      <!-- <div class="container"> 
       <header>
         <img src="images/note.png" alt="" />
-        <h1>Shopping List</h1>
+        <h1>ToDo List</h1>
       </header>
       <form id="item-form">
         <div class="form-control">
@@ -47,35 +47,97 @@
       </div>
 
       <ul id="item-list" class="items">
-        <!-- <li>
-          Apples
-          <button class="remove-item btn-link text-red">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </li>
-        <li>
-          Orange Juice
-          <button class="remove-item btn-link text-red">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </li>
-        <li>
-          Oreos
-          <button class="remove-item btn-link text-red">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </li>
-        <li>
-          Milk
-          <button class="remove-item btn-link text-red">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </li> -->
       </ul>
 
       <button id="clear" class="btn-clear">Clear All</button>
     </div>
 
+    <script src="script.js"></script>-->
+    <header>
+      <img src="images/Logo.png" alt="logo">
+    </header>
+    <main>
+
+      <div id="input">
+        <input type="text" id="search" placeholder="search tasks here">
+        <button type="submit">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+      </div>
+
+    
+          <div id="todo-data">
+            
+            <textarea id="todo-text-area" placeholder="enter the todo task here"></textarea>
+            <input type="date" placeholder="date goes here">
+
+            <span class="radio-heading">Priority:</span>
+            <div id="radios">
+              <label>low
+                <input type="radio" name="priority" value="low">
+              </label>
+              <label>medium
+                <input type="radio" name="priority" value="medium">
+              </label>
+              <label>high
+                <input type="radio" name="priority" value="high">
+              </label>
+            </div>
+
+            <span class="radio-heading">Status:</span>
+            <div id="status">
+              <label>todo
+                <input type="radio" name="status" value="todo">
+              </label>
+              <label>started
+                <input type="radio" name="status" value="started">
+              </label>
+              <label>completed
+                <input type="radio" name="status" value="completed">
+              </label>
+            </div>
+         
+          </div>
+        <button class="add-todo">
+          <i class="fa-solid fa-plus"></i>
+          Create ToDo
+        </button> 
+      
+      <section id="todo-list">
+        <div class="todo meta">
+          <span class="left">ToDo:0</span>
+          <span class="right">High Priority:0</span>
+        </div>
+        <div id="items">
+         
+        </div>
+      </section>
+      
+      <section id="started">
+        <div class="started meta">
+          <span class="left">Started:0</span>
+          <span class="right">High Priority:0</span>
+        </div>
+        <div id="items">
+         
+        </div>
+      </section>
+    
+      
+        <section id="completed">
+          <div class="completed meta">
+            <span class="left">Completed:0</span>
+            <span class="right">High Priority:0</span>
+          </div>
+          <div id="items">
+           
+          </div>
+        </section>
+
+
+       
+    
+    </main>
     <script src="script.js"></script>
-  </body>
+  </body> 
 </html>
